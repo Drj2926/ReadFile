@@ -11,14 +11,17 @@ namespace ReadFile
     { 
         static void Main(string[] args)
         {
+            //FILE 
             string folderPath = @"C:\Users\djimbo\Documents\";
             string fileName = "JETRO.NACHA.Nacha";
             string fileType = ".2016003";
             string findText = "627021000021031009719";
-            int numFields = 3;
-            int findTextIndex = 0;
 
-            JRDFile read = new JRDFile(fileName,folderPath,fileType,numFields,findText,findTextIndex);
+            //FILE CONSTRAINTS
+            string find
+
+
+            JRDFile read = new JRDFile(fileName,folderPath,fileType));
 
 
             read.readFile(read);

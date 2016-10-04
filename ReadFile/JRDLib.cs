@@ -17,15 +17,14 @@ namespace ReadFile
         string folderPath { get; set; }
         string filePath { get; set; }
         string fileType { get; set; }
-        int fixedWidth { get; set; }
-        bool isFixedWidth { get; set; }
-        int numFields { get; set; }
-        string delimeter { get; set; }
-        bool hasDelimeter { get; set; }
-        string findText { get; set; }
-        bool hasFindText { get; set; }
-        int findTextIndex { get; set; }
-        string[] fields;
+        JRDPTextFinder [] textFinder;
+        int fieldsToFind;
+        //int fixedWidth { get; set; }
+        //bool isFixedWidth { get; set; }
+        //int numFields { get; set; }
+        //string findText { get; set; }
+        //bool hasFindText { get; set; }
+        //int findTextIndex { get; set; }
         //JRDFileField fields;
 
     /// <summary>
@@ -48,16 +47,14 @@ namespace ReadFile
     /// <param name="numFields"></param>
     /// <param name="findText"></param>
     /// <param name="findeTextIndex"></param>
-    public JRDFile(string fileName, string folderPath,string fileType, int numFields,string findText,int findeTextIndex)
+    public JRDFile(string fileName, string folderPath,string fileType,int fieldsToFind)
     {
         this.fileName = fileName;
         this.folderPath = folderPath;
         this.filePath = folderPath + fileName + fileType;
         this.fileType = fileType;
-        this.numFields = numFields;
-        this.findText = findText;
-        this.findTextIndex = findTextIndex;
-        fields = new string [numFields];
+        this.fieldsToFind = fieldsToFind;
+        textFinder = new JRDPTextFinder[fieldsToFind];
     }
 
 
@@ -66,19 +63,24 @@ namespace ReadFile
         using (StreamReader reader = new StreamReader(file.filePath))
         {
             string currLine = "";
-            string[] fields = new string[file.numFields]; 
-            while ((currLine = reader.ReadLine()) != null)
+            int numConstraints = file.textFinder.Length;
+             
+            //WE MAY HAVE NUMEROUS CONSTRAINTS PER FILE
+            for(int i = 0; i < numConstraints; i++)
             {
-                    if(Regex.Split(currLine,@"\s{2,}").Length == numFields)
+                string[] fields = new string[file.textFinder[i].fieldCount];
+                while ((currLine = reader.ReadLine()) != null)
                 {
-                    fields = Regex.Split(currLine, @"\s{2,}");
-
-                    if (fields[findTextIndex].Equals(findText))
+                    if (Regex.Split(currLine, "@" + file.textFinder[i].delimeter).Length == file.textFinder[i].fieldCount)
                     {
-                        writeToFile(file, currLine);
+                        fields = Regex.Split(currLine, "@" + file.textFinder[i].delimeter);
+                        if (fields[file.textFinder[i].fieldIndex].Equals(file.textFinder[i].findText))
+                        {
+                            writeToFile(file, currLine);
+                        }//if
                     }//if
-                }//if
-            }//while
+                }//while
+            }
         }//using
     }//method
 
@@ -93,7 +95,43 @@ namespace ReadFile
 
 }//CLASS
 
+    class JRDPTextFinder
+    {
+        public bool isFixedWidth;
+        public bool isLineNumber;
+        public bool isFieldCount;
+        public bool isFieldIndex;
+        public bool hasFindText;
+        public bool hasDelimeter;
+        public long fixedWidth;
+        public int lineNumber;
+        public int fieldCount;
+        public int fieldIndex;
+        public string findText;
+        public string delimeter;
+        string[] fields;
 
+
+        public JRDPTextFinder()
+        {
+
+        }
+
+        public JRDPTextFinder(int fieldCount, int fieldIndex,string findText,string delimeter)
+        {
+            this.fieldCount = fieldCount;
+            this.fieldIndex = fieldIndex;
+            this.findText = findText;
+            this.delimeter = delimeter;
+            this.isFieldCount = true;
+            this.isFieldIndex = true;
+            this.isFixedWidth = false;
+            this.isLineNumber = false;
+            this.hasFindText = true;
+            this.hasDelimeter = true;
+            fields = new string[fieldCount];
+        }
+    }
 
 
     class JRDLibSqlConnection
