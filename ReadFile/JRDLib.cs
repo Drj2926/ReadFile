@@ -17,7 +17,7 @@ namespace ReadFile
         string folderPath { get; set; }
         string filePath { get; set; }
         string fileType { get; set; }
-        JRDPTextFinder [] textFinder;
+        JRDTextFinder [] textFinder;
         int fieldsToFind;
         //int fixedWidth { get; set; }
         //bool isFixedWidth { get; set; }
@@ -47,14 +47,14 @@ namespace ReadFile
     /// <param name="numFields"></param>
     /// <param name="findText"></param>
     /// <param name="findeTextIndex"></param>
-    public JRDFile(string fileName, string folderPath,string fileType,int fieldsToFind)
+    public JRDFile(string fileName, string folderPath,string fileType,JRDTextFinder [] textFinder)
     {
         this.fileName = fileName;
         this.folderPath = folderPath;
         this.filePath = folderPath + fileName + fileType;
         this.fileType = fileType;
-        this.fieldsToFind = fieldsToFind;
-        textFinder = new JRDPTextFinder[fieldsToFind];
+        //this.fieldsToFind = fieldsToFind;
+        this.textFinder = textFinder;
     }
 
 
@@ -71,9 +71,9 @@ namespace ReadFile
                 string[] fields = new string[file.textFinder[i].fieldCount];
                 while ((currLine = reader.ReadLine()) != null)
                 {
-                    if (Regex.Split(currLine, "@" + file.textFinder[i].delimeter).Length == file.textFinder[i].fieldCount)
+                    if (Regex.Split(currLine, file.textFinder[i].delimeter).Length == file.textFinder[i].fieldCount)
                     {
-                        fields = Regex.Split(currLine, "@" + file.textFinder[i].delimeter);
+                        fields = Regex.Split(currLine, file.textFinder[i].delimeter);
                         if (fields[file.textFinder[i].fieldIndex].Equals(file.textFinder[i].findText))
                         {
                             writeToFile(file, currLine);
@@ -95,7 +95,7 @@ namespace ReadFile
 
 }//CLASS
 
-    class JRDPTextFinder
+   public class JRDTextFinder
     {
         public bool isFixedWidth;
         public bool isLineNumber;
@@ -112,12 +112,25 @@ namespace ReadFile
         string[] fields;
 
 
-        public JRDPTextFinder()
+        public JRDTextFinder()
         {
 
         }
 
-        public JRDPTextFinder(int fieldCount, int fieldIndex,string findText,string delimeter)
+        public JRDTextFinder(int fieldCount, int fieldIndex, int lineNumber)
+        {
+            this.fieldCount = fieldCount;
+            this.fieldIndex = fieldIndex;
+            this.lineNumber = lineNumber;
+            this.isFieldCount = true;
+            this.isFieldIndex = true;
+            this.isLineNumber = true;
+            this.isFixedWidth = false;
+            this.hasFindText = false;
+            this.hasDelimeter = false;
+        }
+
+        public JRDTextFinder(int fieldCount, int fieldIndex,string findText,string delimeter)
         {
             this.fieldCount = fieldCount;
             this.fieldIndex = fieldIndex;
